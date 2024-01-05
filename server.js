@@ -1,47 +1,11 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
-const Sequelize = require('sequelize');
-const fs = require('fs');
 const helpers = require('./utils/helpers');
 const exphbs = require('express-handlebars');
+const sequelize = require('./config/connection')
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
-const { User, Post, Comment } = require('./models'); // Adjust the path as necessary
-
-// Initialize Sequelize
-let sequelize;
-if (process.env.JAWSDB_URL) {
-    sequelize = new Sequelize(process.env.JAWSDB_URL);
-} else {
-    sequelize = new Sequelize('tech_blog_db', 'root', 'ilovecats', {
-        host: "localhost",
-        dialect: "mysql"
-    });
-}
-
-// Data export function
-async function exportDataToJson() {
-    try {
-        const users = await User.findAll({ raw: true });
-        const posts = await Post.findAll({ raw: true });
-        const comments = await Comment.findAll({ raw: true });
-
-        // Define the file paths
-        const userDataPath = path.join(__dirname, 'seeds', 'userData.json');
-        const postDataPath = path.join(__dirname, 'seeds', 'postData.json');
-        const commentDataPath = path.join(__dirname, 'seeds', 'commentData.json');
-
-        // Write the data to JSON files in the specified directory
-        fs.writeFileSync(userDataPath, JSON.stringify(users, null, 2));
-        fs.writeFileSync(postDataPath, JSON.stringify(posts, null, 2));
-        fs.writeFileSync(commentDataPath, JSON.stringify(comments, null, 2));
-
-        console.log('Data exported to JSON files in seeds folder.');
-    } catch (error) {
-        console.error('Error exporting data:', error);
-    }
-}
 
 // Create an instance of express
 const app = express();
@@ -81,11 +45,10 @@ app.use(routes);
 
 // Sync sequelize, export data to JSON, and start the server
 sequelize.sync().then(() => {
-    exportDataToJson().then(() => {
+   
         app.listen(PORT, () => {
             console.log(`App listening on port ${PORT}!`);
         });
-    });
 });
 
 
